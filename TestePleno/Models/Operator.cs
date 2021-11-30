@@ -8,8 +8,13 @@ namespace TestePleno.Models
 {
     public class Operator : IModel
     {
-        public Guid Id { get; set; }
-        public string Code { get; set; }
+		public Operator(Guid id, string code)
+		{
+			Id = id;
+			Code = code;
+		}
 
+		public Guid Id { get; set; }
+        public string Code { get; set; }
     }
 }

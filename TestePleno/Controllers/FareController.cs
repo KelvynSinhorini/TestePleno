@@ -1,24 +1,42 @@
-﻿using TestePleno.Models;
+﻿using System;
+using System.Linq;
+using TestePleno.Models;
 using TestePleno.Services;
 
 namespace TestePleno.Controllers
 {
 	public class FareController
 	{
-		private readonly OperatorService _operatorService;
-		private readonly FareService FareService;
+		private readonly OperatorService operatorService;
+		private readonly FareService fareService;
 
 		public FareController()
 		{
-			_operatorService = new OperatorService();
+			operatorService = new OperatorService();
+			fareService = new FareService();
+
+			operatorService.Create(new Operator(Guid.NewGuid(), "OP01"));
+			operatorService.Create(new Operator(Guid.NewGuid(), "OP02"));
+			operatorService.Create(new Operator(Guid.NewGuid(), "OP03"));
 		}
 
-		public void CreateFare(Fare fare, string operatorCode)
+		public string CreateFare(Fare fare, string operatorCode)
 		{
-			var selectedOperator = _operatorService.GetOperatorByCode(operatorCode);
+			var selectedOperator = operatorService.GetOperatorByCode(operatorCode);
+
+			if (selectedOperator == null)
+				return $"Não existe nenhuma entidade com o codigo '{operatorCode}'.";
+
 			fare.OperatorId = selectedOperator.Id;
 
-			FareService.Create(fare);
+			var fareExistent = fareService.GetFares().FirstOrDefault(x => x.OperatorId == fare.OperatorId && x.Date > DateTime.Now.AddMonths(-6) && x.Value == fare.Value && x.Status == 1);
+
+			if (fareExistent != null)
+				return "Ja existe uma entidade ativa, com esse valor, dentro de 6 meses.";
+
+			fareService.Create(fare);
+
+			return "sucess";
 		}
 	}
 }
